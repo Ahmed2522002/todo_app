@@ -14,6 +14,8 @@ import '../componants/constants.dart';
 import '../componants/shard_componant.dart';
 
 class HomeScreen extends StatelessWidget {
+  HomeScreen({Key? key}) : super(key: key);
+
   var scaffoldKey = GlobalKey<ScaffoldState>();
   var formkey = GlobalKey<FormState>();
 
@@ -22,66 +24,92 @@ class HomeScreen extends StatelessWidget {
   var dateController = TextEditingController();
 
   @override
-  // void initState() {
-  //   super.initState();
-  //   initializeDatabase();
-  // }
-  //
-  // Future<void> initializeDatabase() async {
-  //   await CreateDB();
-  //   setState(() {});
-  // }
-  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => TodoCubit()..CreateDB(),
-      child: BlocConsumer<TodoCubit, TodoStates>(
-        listener: (context, state) {
-          print("State changed to: ${state.runtimeType}");
-        },
-        builder: (context, state) {
-          print("Current state: ${state.runtimeType}");
+    return BlocConsumer<TodoCubit, TodoStates>(
+      listener: (context, state) {
+        print("State changed to: ${state.runtimeType}");
+      },
+      builder: (context, state) {
+        print("Current state: ${state.runtimeType}");
 
-          TodoCubit todoCubit = TodoCubit.get(context);
+        TodoCubit todoCubit = TodoCubit.get(context);
 
-          return Scaffold(
-            key: scaffoldKey,
-            floatingActionButton: FloatingActionButton(
-              onPressed: () async {
-                print("FAB fallback action");
-                print("FAB pressed!");
+        return Scaffold(
+          key: scaffoldKey,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              print("FAB fallback action");
+              print("FAB pressed!");
 
-                if (todoCubit.isBottomSheetShown) {
-                  if (formkey.currentState?.validate() ?? false) {
-                    todoCubit.InsertIntoDB(
-                        title: titleController.text,
-                        date: dateController.text,
-                        time: timeController.text);
-                    // await InsertIntoDB(
-                    //   title: titleController.text,
-                    //   date: dateController.text,
-                    //   time: timeController.text,
-                    // );
-                    // Navigator.pop(context);
-                    // isBottomSheetShown = false;
-                    Navigator.pop(context);
-                    todoCubit.changeBottomSheetSt(
-                        isShow: false, icon: Icons.edit);
-// setState(() {
-//   fabIcon = Icons.edit;
-// });
-                  }
-                } else {
-                  scaffoldKey.currentState
-                      ?.showBottomSheet(
-                        (context) => Container(
-                          padding: const EdgeInsets.all(15),
-                          child: Form(
-                            key: formkey,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                defualtFormfeild(
+              if (todoCubit.isBottomSheetShown) {
+                if (formkey.currentState?.validate() ?? false) {
+                  todoCubit.InsertIntoDB(
+                      title: titleController.text,
+                      date: dateController.text,
+                      time: timeController.text);
+                  titleController.text = '';
+                  timeController.text = '';
+                  dateController.text = '';
+                  Navigator.pop(context);
+                  todoCubit.changeBottomSheetSt(
+                      isShow: false, icon: Icons.edit);
+                }
+              } else {
+                scaffoldKey.currentState
+                    ?.showBottomSheet(
+                      (context) => Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              spreadRadius: 1,
+                              blurRadius: 10,
+                              offset: const Offset(0, -5),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.only(
+                          top: 20,
+                          left: 20,
+                          right: 20,
+                          bottom: 40,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 4,
+                              margin: const EdgeInsets.only(bottom: 20),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[400],
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            Text(
+                              'Add New Task',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Form(
+                              key: formkey,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  defualtFormfeild(
+                                    context: context,
                                     controller: titleController,
                                     type: TextInputType.text,
                                     valid: (String? value) {
@@ -91,11 +119,10 @@ class HomeScreen extends StatelessWidget {
                                       return null;
                                     },
                                     label: 'Task Title',
-                                    prefix: Icons.task),
-                                const SizedBox(
-                                  height: 15,
-                                ),
-                                defualtFormfeild(
+                                    prefix: Icons.title,
+                                  ),
+                                  defualtFormfeild(
+                                    context: context,
                                     controller: timeController,
                                     type: TextInputType.datetime,
                                     ontap: () {
@@ -116,11 +143,10 @@ class HomeScreen extends StatelessWidget {
                                       return null;
                                     },
                                     label: 'Task Time',
-                                    prefix: Icons.watch_later),
-                                const SizedBox(
-                                  height: 15,
-                                ),
-                                defualtFormfeild(
+                                    prefix: Icons.access_time_rounded,
+                                  ),
+                                  defualtFormfeild(
+                                    context: context,
                                     controller: dateController,
                                     type: TextInputType.datetime,
                                     ontap: () {
@@ -142,75 +168,85 @@ class HomeScreen extends StatelessWidget {
                                       return null;
                                     },
                                     label: 'Task Date',
-                                    prefix: Icons.calendar_today)
-                              ],
+                                    prefix: Icons.calendar_today_outlined,
+                                  ),
+                                  const SizedBox(height: 20),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        if (formkey.currentState?.validate() ?? false) {
+                                          todoCubit.InsertIntoDB(
+                                            title: titleController.text,
+                                            date: dateController.text,
+                                            time: timeController.text,
+                                          );
+                                          titleController.text = '';
+                                          timeController.text = '';
+                                          dateController.text = '';
+                                          Navigator.pop(context);
+                                          todoCubit.changeBottomSheetSt(
+                                            isShow: false,
+                                            icon: Icons.edit,
+                                          );
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.deepOrange,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Add Task',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      )
-                      .closed
-                      .then((value) {
-                    todoCubit.changeBottomSheetSt(
-                        isShow: false, icon: Icons.edit);
-                  });
-                  todoCubit.changeBottomSheetSt(isShow: true, icon: Icons.add);
-                }
-              },
-              backgroundColor: Colors.blue,
-              shape: const CircleBorder(),
-              child: Icon(
-                todoCubit.fabIcon,
-                color: Colors.white,
-              ),
+                      ),
+                      backgroundColor: Colors.transparent,
+                    )
+                    .closed
+                    .then((value) {
+                  todoCubit.changeBottomSheetSt(
+                      isShow: false, icon: Icons.edit);
+                });
+                todoCubit.changeBottomSheetSt(isShow: true, icon: Icons.add);
+              }
+            },
+            child: Icon(
+              todoCubit.fabIcon,
+              color: Colors.white,
             ),
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.centerDocked,
-            backgroundColor: const Color(0xffd1d9e6),
-            bottomNavigationBar: BottomNavigationBar(
-              backgroundColor: const Color(0xffd1d9e6),
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tasks'),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.check_circle_outline),
-                    label: 'Done Tasks'),
-              ],
-              currentIndex: todoCubit.currentIndex,
-              onTap: todoCubit.changeIndex,
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: Colors.blue,
-            ),
-            body: todoCubit.currentIndex == 0
-                ? const TasksScreen()
-                : const DoneTaskScreen(),
-          );
-        },
-      ),
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
+          bottomNavigationBar: BottomNavigationBar(
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.task), label: 'Tasks'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.check_circle_outline),
+                  label: 'Done Tasks'),
+            ],
+            currentIndex: todoCubit.currentIndex,
+            onTap: todoCubit.changeIndex,
+            type: BottomNavigationBarType.fixed,
+          ),
+          body: todoCubit.currentIndex == 0
+              ? TasksScreen()
+              : const DoneTaskScreen(),
+        );
+      },
     );
   }
-
-// Future InsertIntoDB({
-//   required String title,
-//   required String date,
-//   required String time,
-// }) async {
-//   return await database?.transaction((txn) async {
-//     txn
-//         .rawInsert(
-//             'INSERT INTO Test(title, date, time, status) VALUES("$title", "$date", "$time", "new")')
-//         .then((value) {
-//       print('inserted successfully $value inserted');
-//     }).catchError((error) {
-//       print('inserted error${error.toString()}');
-//     });
-//     return null;
-//   });
-//
-//   // database?.transaction((txn)  {
-//   //    txn.rawInsert(
-//   //       'INSERT INTO Test(name, value, num) VALUES("some name", 1234, 456.789)')
-//   //        .then((onValue){}).catchError((onError){});
-//   //    return null;
-//   //
-//   // });
-// }
 }

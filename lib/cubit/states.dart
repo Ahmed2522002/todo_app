@@ -11,3 +11,5 @@ class InsertDatabaseState extends TodoStates {}
 class GetDatabaseState extends TodoStates {}
 
 class ChangeBottomSheetState extends TodoStates {}
+
+class UpdateDatabaseState extends TodoStates {}

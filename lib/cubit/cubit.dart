@@ -21,6 +21,7 @@ class TodoCubit extends Cubit<TodoStates> {
 
   Database? database;
   List<Map> tasks = [];
+  List<Map> doneTasks = [];
 
   void CreateDB() {
     openDatabase('todo.db', version: 1, onCreate: (db, version) {
@@ -34,10 +35,7 @@ class TodoCubit extends Cubit<TodoStates> {
     }, onOpen: (db) {
       print('Database Opened');
       database = db; // Assign the database here
-      getDataFromDB(db).then((value) {
-        tasks = value;
-        emit(GetDatabaseState());
-      });
+      getDataFromDB(db);
     }).then((value) {
       database = value;
       print('Database assigned, emitting CreateDatabaseState...');
@@ -65,23 +63,30 @@ class TodoCubit extends Cubit<TodoStates> {
           .then((value) {
         print('Inserted successfully: $value');
         emit(InsertDatabaseState());
-        getDataFromDB(database).then((value) {
-          tasks = value;
-          print(tasks);
-          emit(GetDatabaseState());
-        });
+        getDataFromDB(database);
       }).catchError((error) {
         print('Insertion error: ${error.toString()}');
       });
     });
   }
 
-  Future<List<Map>> getDataFromDB(Database? database) async {
-    if (database == null) {
-      print("Database is null.");
-      return [];
-    }
-    return await database.rawQuery('SELECT * FROM Test');
+  void getDataFromDB(Database? database) async {
+    await database?.rawQuery('SELECT * FROM Test').then((value) {
+      tasks = [];
+      doneTasks = [];
+      for (var element in value) {
+        if(element['status'] == 'new')
+          tasks.add(element);
+        else
+          doneTasks.add(element);
+      }
+      emit(GetDatabaseState());
+    });
+  }
+  void deleteDatabase(int id) {
+    database!.rawDelete('DELETE FROM Test WHERE id = ?', [id]).then((value) {
+      getDataFromDB(database);
+    });
   }
 
   bool isBottomSheetShown = false;
@@ -90,6 +95,17 @@ class TodoCubit extends Cubit<TodoStates> {
     isBottomSheetShown = isShow;
     fabIcon = icon;
     emit(ChangeBottomSheetState());
+  }
+
+  void updateData({
+    required String status,
+    required int id,
+  }) {
+    database!.rawUpdate('UPDATE Test SET status = ? WHERE id = ?', [status, id])
+        .then((value) {
+      getDataFromDB(database);
+    });
+    emit(UpdateDatabaseState());
   }
 
 }
